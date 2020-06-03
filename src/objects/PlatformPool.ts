@@ -26,7 +26,7 @@ export default class PlatformPool extends Phaser.GameObjects.Group implements IP
 			platform.visible = false;
 			platform.active = false;
 			this.add(platform);
-			console.log('added platform', i);
+			// console.log('added platform', i);
 		}
 	}
 
