@@ -90,7 +90,7 @@ export default class GameOver extends Phaser.Scene {
 			loop: -1
 		});
 		// Register on click events:
-		this.retryText.on('pointerup', () => {
+		this.input.once('pointerup', () => {
 			this.scene.start('EndlessRunner');
 			this.bgm.stop();
 			gameoverTextTween.stop();

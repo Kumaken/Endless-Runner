@@ -50,7 +50,8 @@ export default class GameOver extends Phaser.Scene {
 			loop: -1
 		});
 
-		this.clickToStartButton.on('pointerup', () => {
+		this.input.once('pointerup', () => {
+			4;
 			if (clickToStartButtonTween) clickToStartButtonTween.stop();
 			this.clickToStartButton.visible = false;
 			this.bgm = this.sound.add(KEY_AUDIO_TITLESCREEN, { loop: false });
@@ -131,6 +132,13 @@ export default class GameOver extends Phaser.Scene {
 				.setAlpha(0);
 			this.startButton.visible = false;
 
+			// Register on click events:
+			this.input.once('pointerdown', () => {
+				this.scene.start('PreloadGame');
+				this.bgm.stop();
+				if (startButtonTween) startButtonTween.stop();
+			});
+
 			let startButtonTween: Phaser.Tweens.Tween;
 
 			this.tweens.add({
@@ -198,12 +206,6 @@ export default class GameOver extends Phaser.Scene {
 						}
 					});
 				}
-			});
-			// Register on click events:
-			this.startButton.on('pointerup', () => {
-				this.scene.start('PreloadGame');
-				this.bgm.stop();
-				if (startButtonTween) startButtonTween.stop();
 			});
 		});
 	}

@@ -14,6 +14,7 @@ import {
 	KEY_BG_DAY,
 	KEY_BG_NIGHT
 } from '../keys/ObjectKeys';
+/* This imports are needed for module augmentation to work */
 import '../objects/PlatformPool';
 import '../objects/ObstaclePool';
 import '../objects/CollectiblePool';
@@ -25,48 +26,34 @@ import ISunPool from '../objects/ISunPool';
 
 // global game options
 let gameOptions = {
-	platformSpeed: 250, // platform speed in pixels per second
+	platformSpeed: 250, // platform movement speed in pixels/sec
 	spawnRange: [80, 300], // spawn range, how far should be the rightmost platform from the right edge before next platform spawns, in pixels
-	platformSizeRange: [150, 400], // platform width range, in pixels
-	platformHeightRange: [-5, 5], // a height range between rightmost platform and next platform to be spawned
-	platformHeightScale: 20, // a scale to be multiplied by platformHeightRange
-	platformVerticalLimit: [0.4, 0.8], // platform max and min height, as screen height ratio
+	platformSizeRange: [150, 400], // platform width size range
+	platformHeightRange: [-5, 5], // next platform height range
+	platformHeightScale: 20, // scaling: multiply to platformHeightRange so the height doesn't fluctuate too much
+	platformVerticalLimit: [0.4, 0.8], // platform spawn area max and min height as screen height ratio
 	playerGravity: 900, // player gravity
-	jumpForce: 600, // player jump force
-	playerStartPosition: 200, // player starting X position
-	jumps: 2, // consecutive jumps allowed
-	collectibleRate: 100, // % of probability a collectible appears on the platform
-	obstacleRate: 35, // % of probability a fire appears on the platform
+	jumpForce: 600, // player jumping force
+	playerStartPosition: 200, // player starting position X
+	jumps: 2, // consecutive jump capability
+	collectibleRate: 100, // probability a collectible appears when a platform is spawned (percentage)
+	obstacleRate: 35, // probability an obstacle is spawned when a platform is spawned (percentage)
 	maxPlatforms: 10, // Max Number of platforms that can exist at any moment of the game
-	sunRate: 50,
+	// probabilities of which obstacle to spawn: (CUMULATIVE PROBABILITY)
+	sunRate: 50, // e.g. : if dice rolls <= sunRate: then spawn a sun, else check for thorn
 	thornRate: 100
 };
 
-let scoreState = {
-	score: 0,
-	scoreMultiplier: 1,
-	justUpdated: false,
-	timedEvent: null,
-	level: 1
-};
-
-// helper functions:
-function updateScore() {
-	scoreState.score += scoreState.scoreMultiplier * 10;
-	scoreState.justUpdated = false;
-}
-
-function resetScoreState() {
-	scoreState.score = 0;
-	scoreState.scoreMultiplier = 1;
-	scoreState.justUpdated = false;
-	scoreState.level = 1;
-	gameOptions.collectibleRate = 50;
-	gameOptions.obstacleRate = 25;
-	gameOptions.platformSpeed = 200;
-}
-
 export default class EndlessRunner extends Phaser.Scene {
+	/* Score members */
+	private scoreState = {
+		score: 0,
+		scoreMultiplier: 1,
+		justUpdated: false,
+		timedEvent: null,
+		level: 1
+	};
+
 	/* Player Members */
 	private playerJumps: number;
 	private player: Phaser.Physics.Arcade.Sprite;
@@ -161,9 +148,9 @@ export default class EndlessRunner extends Phaser.Scene {
 		this.collectiblePool.initializeWithSize(gameOptions.maxPlatforms);
 
 		/* Scoring System */
-		scoreState.timedEvent = this.time.addEvent({
+		this.scoreState.timedEvent = this.time.addEvent({
 			delay: 100,
-			callback: updateScore,
+			callback: this.updateScore,
 			callbackScope: this,
 			loop: true
 		});
@@ -306,19 +293,110 @@ export default class EndlessRunner extends Phaser.Scene {
 		);
 	}
 
-	// the core of the script: platform are added from the pool or created on the fly
+	update() {
+		/* Check if the game is over */
+		if (this.player.y > this.game.config.height || this.isGameover) {
+			this.scene.start('GameOver', { finalScore: this.scoreState.score });
+			this.resetScoreState();
+			this.bgm.stop();
+		}
+
+		/* Background updates: Paralax Effect*/
+		if (this.isDay) this.dayBG.tilePositionX += 0.5;
+		else this.nightBG.tilePositionX += 0.5;
+
+		// Check if player is touching ground or not
+		if (this.player.body.touching.down && !this.playerIsDucking) this.player.anims.play(KEY_PLAYER_WALK, true);
+
+		/* Player Position Update */
+		this.player.x = gameOptions.playerStartPosition;
+
+		/* Scoring System */
+		this.scoreText.setText('Score: ' + this.scoreState.score);
+		this.levelText.setText('Level: ' + this.scoreState.level);
+		this.multiplierText.setText('Multiplier: ' + this.scoreState.scoreMultiplier + 'x');
+		this.obstacleRateText.setText('Obstacle Rate: ' + gameOptions.obstacleRate + '%');
+		this.collectibleRateText.setText('Collectible Rate: ' + gameOptions.collectibleRate + '%');
+		this.platformSpeedText.setText('Platform Speed: ' + gameOptions.platformSpeed + 'pixel per second');
+		if (
+			this.scoreState.score >= Math.pow(10, this.scoreState.level + 2) &&
+			this.scoreState.score !== 0 &&
+			!this.scoreState.justUpdated
+		)
+			this.NextLevel();
+
+		/* Spawning new platforms */
+		const minDistance =
+			(this.game.config.width as number) - this.rightmostPlatform.x - this.rightmostPlatform.displayWidth / 2; // Get the distance between the rightmost playform and edge of screen
+		if (minDistance > this.nextPlatformDistance) {
+			// If it's already time to spawn a new platform
+			var nextPlatformWidth = Phaser.Math.Between(
+				gameOptions.platformSizeRange[0],
+				gameOptions.platformSizeRange[1]
+			);
+			let platformRandomHeight =
+				gameOptions.platformHeightScale *
+				Phaser.Math.Between(gameOptions.platformHeightRange[0], gameOptions.platformHeightRange[1]);
+			let nextPlatformGap = this.rightmostPlatform.y + platformRandomHeight; // determine the new platform height
+			let minPlatformHeight = (this.game.config.height as number) * gameOptions.platformVerticalLimit[0];
+			let maxPlatformHeight = (this.game.config.height as number) * gameOptions.platformVerticalLimit[1];
+			let nextPlatformHeight = Phaser.Math.Clamp(nextPlatformGap, minPlatformHeight, maxPlatformHeight); // don't let the height go higher or lower than the height range (e.g. out of screen)
+			this.rightmostPlatform =
+				this.addPlatform(
+					nextPlatformWidth,
+					(this.sys.game.config.width as number) + nextPlatformWidth / 2,
+					nextPlatformHeight
+				) || this.rightmostPlatform;
+		}
+
+		/* Recycling objects */
+		// recycling platforms
+		this.platformGroup.getChildren().forEach(function (platform: Phaser.GameObjects.TileSprite) {
+			// Check if platform is already out of screen scope
+			if (platform.x < -platform.displayWidth / 2) {
+				this.platformPool.despawn(platform);
+				this.platformGroup.killAndHide(platform);
+				this.platformGroup.remove(platform);
+			}
+		}, this);
+		// recycling obstacle
+		this.obstacleGroup.getChildren().forEach(function (obstacle: Phaser.GameObjects.Sprite) {
+			// Check if obstacle is already out of screen scope
+			if (obstacle.x < -obstacle.displayWidth / 2) {
+				if (obstacle.texture.key === KEY_OBSTACLE_THORN) {
+					this.obstaclePool.despawn(obstacle);
+				} else {
+					this.sunPool.despawn(obstacle);
+				}
+				this.obstacleGroup.killAndHide(obstacle);
+				this.obstacleGroup.remove(obstacle);
+			}
+		}, this);
+		// recycling collectibles
+		this.collectibleGroup.getChildren().forEach(function (collectible: Phaser.GameObjects.Sprite) {
+			// Check if collectible is already out of screen scope
+			if (collectible.x < -collectible.displayWidth / 2) {
+				this.collectiblePool.despawn(collectible);
+				this.collectibleGroup.killAndHide(collectible);
+				this.collectibleGroup.remove(collectible);
+			}
+		}, this);
+	}
+
+	/* HELPER MEMBER FUNCTIONS ------------------------------------------------------- */
+	/* Platform member functions */
 	addPlatform(platformWidth, posX, posY) {
 		this.addedPlatforms++;
 		let platform;
-		platform = this.platformPool.spawn(posX, posY, platformWidth, KEY_PLATFORM);
+		platform = this.platformPool.spawn(posX, posY, platformWidth, KEY_PLATFORM); // Get a platform from platform pool
 		if (platform) {
 			platform.body.setVelocityX(gameOptions.platformSpeed * -1);
 			this.platformGroup.add(platform);
 		}
-
-		this.nextPlatformDistance = Phaser.Math.Between(gameOptions.spawnRange[0], gameOptions.spawnRange[1]);
+		this.nextPlatformDistance = Phaser.Math.Between(gameOptions.spawnRange[0], gameOptions.spawnRange[1]); // Randomly determine distance before spawning a new platform
 
 		if (this.addedPlatforms > 1 && platform) {
+			// If this is not initial platform (Initial platform is always safe!)
 			// spawn collectible or not?
 			if (Phaser.Math.Between(1, 100) <= gameOptions.collectibleRate) {
 				let collectible;
@@ -347,6 +425,7 @@ export default class EndlessRunner extends Phaser.Scene {
 		return platform;
 	}
 
+	/* Player member functions */
 	// the player jumps when on the ground, or once in the air as long as there are jumps left and the first jump was on the ground
 	jump() {
 		if (this.player.body.touching.down || (this.playerJumps > 0 && this.playerJumps < gameOptions.jumps)) {
@@ -361,8 +440,8 @@ export default class EndlessRunner extends Phaser.Scene {
 	}
 
 	duck() {
-		this.player.anims.play(KEY_PLAYER_DUCK, true);
 		if (this.player.body.touching.down && !this.playerIsDucking) {
+			this.player.anims.play(KEY_PLAYER_DUCK, true);
 			this.playerIsDucking = true;
 			this.player.body.setSize(this.player.body.width, this.player.body.height - 40);
 		}
@@ -377,91 +456,7 @@ export default class EndlessRunner extends Phaser.Scene {
 		}
 	}
 
-	update() {
-		/* this.gameover */
-		if (this.player.y > this.game.config.height || this.isGameover) {
-			this.scene.start('GameOver', { finalScore: scoreState.score });
-			resetScoreState();
-			this.bgm.stop();
-		}
-
-		/* Background updates */
-		if (this.isDay) this.dayBG.tilePositionX += 0.5;
-		else this.nightBG.tilePositionX += 0.5;
-
-		// recycling platforms
-		this.platformGroup.getChildren().forEach(function (platform: Phaser.GameObjects.TileSprite) {
-			// Check if platform is already out of screen scope
-			if (platform.x < -platform.displayWidth / 2) {
-				this.platformPool.despawn(platform);
-				this.platformGroup.killAndHide(platform);
-				this.platformGroup.remove(platform);
-			}
-		}, this);
-
-		// recycling obstacle
-		this.obstacleGroup.getChildren().forEach(function (obstacle: Phaser.GameObjects.Sprite) {
-			if (obstacle.x < -obstacle.displayWidth / 2) {
-				if (obstacle.texture.key === KEY_OBSTACLE_THORN) {
-					this.obstaclePool.despawn(obstacle);
-				} else {
-					this.sunPool.despawn(obstacle);
-				}
-				this.obstacleGroup.killAndHide(obstacle);
-				this.obstacleGroup.remove(obstacle);
-			}
-		}, this);
-
-		// recycling collectibles
-		this.collectibleGroup.getChildren().forEach(function (collectible: Phaser.GameObjects.Sprite) {
-			if (collectible.x < -collectible.displayWidth / 2) {
-				this.collectiblePool.despawn(collectible);
-				this.collectibleGroup.killAndHide(collectible);
-				this.collectibleGroup.remove(collectible);
-			}
-		}, this);
-
-		// adding new platforms
-		const minDistance =
-			(this.game.config.width as number) - this.rightmostPlatform.x - this.rightmostPlatform.displayWidth / 2;
-		if (minDistance > this.nextPlatformDistance) {
-			var nextPlatformWidth = Phaser.Math.Between(
-				gameOptions.platformSizeRange[0],
-				gameOptions.platformSizeRange[1]
-			);
-			let platformRandomHeight =
-				gameOptions.platformHeightScale *
-				Phaser.Math.Between(gameOptions.platformHeightRange[0], gameOptions.platformHeightRange[1]);
-			let nextPlatformGap = this.rightmostPlatform.y + platformRandomHeight;
-
-			let minPlatformHeight = (this.game.config.height as number) * gameOptions.platformVerticalLimit[0];
-			let maxPlatformHeight = (this.game.config.height as number) * gameOptions.platformVerticalLimit[1];
-			let nextPlatformHeight = Phaser.Math.Clamp(nextPlatformGap, minPlatformHeight, maxPlatformHeight);
-			this.rightmostPlatform =
-				this.addPlatform(
-					nextPlatformWidth,
-					(this.sys.game.config.width as number) + nextPlatformWidth / 2,
-					nextPlatformHeight
-				) || this.rightmostPlatform;
-		}
-
-		/* Scoring System */
-		this.scoreText.setText('Score: ' + scoreState.score);
-		this.levelText.setText('Level: ' + scoreState.level);
-		this.multiplierText.setText('Multiplier: ' + scoreState.scoreMultiplier + 'x');
-		this.obstacleRateText.setText('Obstacle Rate: ' + gameOptions.obstacleRate + '%');
-		this.collectibleRateText.setText('Collectible Rate: ' + gameOptions.collectibleRate + '%');
-		this.platformSpeedText.setText('Platform Speed: ' + gameOptions.platformSpeed + 'pixel per second');
-		if (scoreState.score >= Math.pow(10, scoreState.level + 2) && scoreState.score !== 0 && !scoreState.justUpdated)
-			this.NextLevel();
-
-		// check if player is touching ground or not
-		if (this.player.body.touching.down && !this.playerIsDucking) this.player.anims.play(KEY_PLAYER_WALK, true);
-
-		/* Player Updates */
-		this.player.x = gameOptions.playerStartPosition;
-	}
-
+	/* Background member functions */
 	private changeDay() {
 		if (this.isDay) {
 			// change to night
@@ -484,11 +479,12 @@ export default class EndlessRunner extends Phaser.Scene {
 		}
 	}
 
+	/* Score & Level progression member functions */
 	private NextLevel() {
 		this.changeDay();
-		scoreState.scoreMultiplier *= 2;
-		scoreState.justUpdated = true;
-		scoreState.level += 1;
+		this.scoreState.scoreMultiplier *= 2;
+		this.scoreState.justUpdated = true;
+		this.scoreState.level += 1;
 		gameOptions.obstacleRate *= 1.25;
 		gameOptions.collectibleRate *= 1.25;
 		gameOptions.platformSpeed *= 1.25;
@@ -541,7 +537,7 @@ export default class EndlessRunner extends Phaser.Scene {
 	}
 
 	private giveScoreFromCollectibles(x: number, y: number) {
-		let scoreGain = scoreState.scoreMultiplier * scoreState.level * 100;
+		let scoreGain = this.scoreState.scoreMultiplier * this.scoreState.level * 100;
 		this.scoreGainText.setText('+' + scoreGain);
 		this.scoreGainText.x = x;
 		this.scoreGainText.y = y;
@@ -566,7 +562,24 @@ export default class EndlessRunner extends Phaser.Scene {
 			callbackScope: this
 		});
 
-		scoreState.score += scoreGain;
-		scoreState.justUpdated = false;
+		this.scoreState.score += scoreGain;
+		this.scoreState.justUpdated = false;
+	}
+
+	private updateScore() {
+		this.scoreState.score += this.scoreState.scoreMultiplier * 10;
+		this.scoreState.justUpdated = false;
+	}
+
+	private resetScoreState() {
+		this.scoreState.score = 0;
+		this.scoreState.scoreMultiplier = 1;
+		this.scoreState.justUpdated = false;
+		this.scoreState.level = 1;
+		// also reset game options:
+		gameOptions.collectibleRate = 50;
+		gameOptions.obstacleRate = 25;
+		gameOptions.platformSpeed = 200;
+		this.addedPlatforms = 0;
 	}
 }

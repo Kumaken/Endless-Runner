@@ -12,7 +12,7 @@ window.onload = function () {
 		width: 1334,
 		height: 750,
 		scene: [GameStart, PreloadGame, EndlessRunner, GameOver],
-		// scene: [PreloadGame, EndlessRunner, GameOver],
+		// scene: [PreloadGame, EndlessRunner, GameOver], FOR DEVELOPMENT: NO NEED TO TORTURE URSELF WATCHING THE OPENING SCENE ALL THE TIME
 		backgroundColor: 0x000,
 		pixelArt: true,
 		// physics settings
