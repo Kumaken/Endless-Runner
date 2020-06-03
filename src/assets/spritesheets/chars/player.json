@@ -1,0 +1,188 @@
+{
+	"textures": [
+		{
+			"image": "player.png",
+			"format": "RGBA8888",
+			"size": {
+				"w": 244,
+				"h": 214
+			},
+			"scale": 1,
+			"frames": [
+				{
+					"filename": "platformChar_climb1.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 96,
+						"h": 96
+					},
+					"spriteSourceSize": {
+						"x": 14,
+						"y": 16,
+						"w": 77,
+						"h": 80
+					},
+					"frame": {
+						"x": 1,
+						"y": 1,
+						"w": 77,
+						"h": 80
+					}
+				},
+				{
+					"filename": "platformChar_jump.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 96,
+						"h": 96
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 21,
+						"w": 82,
+						"h": 75
+					},
+					"frame": {
+						"x": 80,
+						"y": 1,
+						"w": 82,
+						"h": 75
+					}
+				},
+				{
+					"filename": "platformChar_climb2.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 96,
+						"h": 96
+					},
+					"spriteSourceSize": {
+						"x": 14,
+						"y": 18,
+						"w": 76,
+						"h": 78
+					},
+					"frame": {
+						"x": 1,
+						"y": 83,
+						"w": 76,
+						"h": 78
+					}
+				},
+				{
+					"filename": "platformChar_walk2.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 96,
+						"h": 96
+					},
+					"spriteSourceSize": {
+						"x": 11,
+						"y": 29,
+						"w": 74,
+						"h": 67
+					},
+					"frame": {
+						"x": 164,
+						"y": 1,
+						"w": 74,
+						"h": 67
+					}
+				},
+				{
+					"filename": "platformChar_duck.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 96,
+						"h": 96
+					},
+					"spriteSourceSize": {
+						"x": 6,
+						"y": 34,
+						"w": 86,
+						"h": 62
+					},
+					"frame": {
+						"x": 80,
+						"y": 78,
+						"w": 86,
+						"h": 62
+					}
+				},
+				{
+					"filename": "platformChar_idle.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 96,
+						"h": 96
+					},
+					"spriteSourceSize": {
+						"x": 14,
+						"y": 29,
+						"w": 68,
+						"h": 67
+					},
+					"frame": {
+						"x": 168,
+						"y": 70,
+						"w": 68,
+						"h": 67
+					}
+				},
+				{
+					"filename": "platformChar_happy.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 96,
+						"h": 96
+					},
+					"spriteSourceSize": {
+						"x": 7,
+						"y": 25,
+						"w": 82,
+						"h": 71
+					},
+					"frame": {
+						"x": 79,
+						"y": 142,
+						"w": 82,
+						"h": 71
+					}
+				},
+				{
+					"filename": "platformChar_walk1.png",
+					"rotated": false,
+					"trimmed": true,
+					"sourceSize": {
+						"w": 96,
+						"h": 96
+					},
+					"spriteSourceSize": {
+						"x": 8,
+						"y": 27,
+						"w": 80,
+						"h": 69
+					},
+					"frame": {
+						"x": 163,
+						"y": 142,
+						"w": 80,
+						"h": 69
+					}
+				}
+			]
+		}
+	],
+	"meta": {
+		"app": "https://www.codeandweb.com/texturepacker",
+		"version": "3.0",
+		"smartupdate": "$TexturePacker:SmartUpdate:d11d2d54e8ace6e0f32c28ee35e4de7f:0f8e35670c6669ce0af8a56f95db2f44:86d5339b780aedd87b35e2b7c0a7e11b$"
+	}
+}

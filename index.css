@@ -1,0 +1,9 @@
+@font-face {
+    font-family: "blrrpixs016r";
+    src: url(src/assets/fonts/blrrpixs016.ttf) format("truetype");
+}
+
+@font-face {
+    font-family: "Orbitron", sans-serif;
+    src: url('src/assets/fonts/Orbitron-Regular.ttf') format("truetype");
+}

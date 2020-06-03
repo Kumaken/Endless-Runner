@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "target": "es5"
+    },
+    "include": [
+      "src/*", "typings", "src/scripts/EndlessRunner.ts", "src/scripts/PreloadGame.ts"
+    ],
+    "typeRoots": [
+      "./typings",
+      "./node_modules/phaser/types",
+      "typings/Pool.d.ts"
+    ],
+    "types": [
+        "Phaser"
+    ],
+    "esModuleInterop": true,
+}

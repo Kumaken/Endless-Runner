@@ -1,0 +1,21 @@
+{
+	"name": "task1",
+	"version": "1.0.0",
+	"description": "task 1",
+	"main": "index.js",
+	"scripts": {
+		"build": "webpack",
+		"start": "npm run build && webpack-dev-server --port=8080 --hot --inline"
+	},
+	"author": "Abel Stanley",
+	"license": "MIT",
+	"devDependencies": {
+		"live-server": "^1.2.1",
+		"phaser": "^3.23.0",
+		"ts-loader": "^7.0.5",
+		"typescript": "^3.9.3",
+		"webpack": "^4.43.0",
+		"webpack-cli": "^3.3.11",
+		"webpack-dev-server": "^3.11.0"
+	}
+}
