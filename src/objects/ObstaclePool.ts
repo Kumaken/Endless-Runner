@@ -31,7 +31,7 @@ export default class ObstaclePool extends Phaser.GameObjects.Group implements IO
 			obstacle.visible = false;
 			obstacle.active = false;
 			this.add(obstacle);
-			console.log('added obstacle thorn', i);
+			// console.log('added obstacle thorn', i);
 		}
 	}
 
