@@ -11,16 +11,16 @@ window.onload = function () {
 		type: Phaser.AUTO,
 		width: 1334,
 		height: 750,
-		// scene: [GameStart, PreloadGame, EndlessRunner, GameOver],
-		scene: [PreloadGame, EndlessRunner, GameOver],
+		scene: [GameStart, PreloadGame, EndlessRunner, GameOver],
+		// scene: [PreloadGame, EndlessRunner, GameOver],
 		backgroundColor: 0x000,
 		pixelArt: true,
 		// physics settings
 		physics: {
 			default: 'arcade',
 			arcade: {
-				tileBias: 8,
-				debug: true
+				tileBias: 8
+				// debug: true
 			}
 		}
 	};
