@@ -16,7 +16,7 @@ import {
 } from '../keys/ObjectKeys';
 import '../objects/PlatformPool';
 import '../objects/ObstaclePool';
-import '../objects/collectiblePool';
+import '../objects/CollectiblePool';
 import '../objects/SunPool';
 import IPlatformPool from '../objects/IPlatformPool';
 import IObstaclePool from '../objects/IObstaclePool';
