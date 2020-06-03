@@ -1,1 +1,1 @@
-web: dist/app.js
+web: node dist/app.js
