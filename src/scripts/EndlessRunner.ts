@@ -40,8 +40,9 @@ let gameOptions = {
 	obstacleRate: 35, // probability an obstacle is spawned when a platform is spawned (percentage)
 	maxPlatforms: 10, // Max Number of platforms that can exist at any moment of the game
 	// probabilities of which obstacle to spawn: (CUMULATIVE PROBABILITY)
-	sunRate: 50, // e.g. : if dice rolls <= sunRate: then spawn a sun, else check for thorn
-	thornRate: 100
+	thornRate: 50, // e.g. : if dice rolls <= thornRate: then spawn a thorn, else check for sun
+	sunRate: 100,
+
 };
 
 export default class EndlessRunner extends Phaser.Scene {
