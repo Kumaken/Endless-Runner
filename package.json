@@ -12,7 +12,7 @@
 	"author": "Abel Stanley",
 	"license": "MIT",
 	"devDependencies": {
-		"express": "^4.17.1",
+		"express": "^4.17.3",
 		"live-server": "^1.2.1",
 		"path": "^0.12.7",
 		"phaser": "^3.23.0",
@@ -23,7 +23,7 @@
 		"webpack-dev-server": "^3.11.0"
 	},
 	"dependencies": {
-		"express": "^4.17.1",
+		"express": "^4.17.3",
 		"path": "^0.12.7",
 		"phaser": "^3.23.0",
 		"ts-loader": "^7.0.5",
